@@ -1,0 +1,145 @@
+on:
+  push:
+    paths:
+      - .github/workflows/build_iVerse.yml
+      - iVerse/**
+      - xmake.lua
+  pull_request:
+    paths:
+      - .github/workflows/build_iVerse.yml
+      - iVerse/**
+      - xmake.lua
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: xmake-io/github-action-setup-xmake@v1
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/AppData/Local/.xmake
+            .xmake
+          key: xmake-iVerse-windows-x64-${{ github.sha }}
+          restore-keys: |
+            xmake-iVerse-windows-x64-
+
+      - run: |
+          xmake repo -u
+
+      - run: |
+          xmake f -a x64 -m release -p windows -v -y
+
+      - run: |
+          xmake -w -y
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: iVerse-windows-x64-${{ github.sha }}
+          path: |
+            build/windows/x64/release/iVerse.dll
+            build/windows/x64/release/iVerse.lib
+            build/windows/x64/release/iVerse.pdb
+
+  build-debug:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: xmake-io/github-action-setup-xmake@v1
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/AppData/Local/.xmake
+            .xmake
+          key: xmake-iVerse-debug-windows-x64-${{ github.sha }}
+          restore-keys: |
+            xmake-iVerse-debug-windows-x64-
+
+      - run: |
+          xmake repo -u
+
+      - run: |
+          xmake f -a x64 -m debug -p windows -v -y
+
+      - run: |
+          xmake -w -y
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: iVerse-debug-windows-x64-${{ github.sha }}
+          path: |
+            build/windows/x64/debug/iVerse.dll
+            build/windows/x64/debug/iVerse.lib
+            build/windows/x64/debug/iVerse.pdb
+
+  build-with-tests:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: xmake-io/github-action-setup-xmake@v1
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/AppData/Local/.xmake
+            .xmake
+          key: xmake-iVerse-with-tests-windows-x64-${{ github.sha }}
+          restore-keys: |
+            xmake-iVerse-with-tests-windows-x64-
+
+      - run: |
+          xmake repo -u
+
+      - run: |
+          xmake f -a x64 -m release -p windows -v -y
+
+      - run: |
+          xmake -w -y
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: iVerse-with-tests-windows-x64-${{ github.sha }}
+          path: |
+            build/windows/x64/release/iVerse.dll
+            build/windows/x64/release/iVerse.lib
+            build/windows/x64/release/iVerse.pdb
+
+  build-debug-with-tests:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: xmake-io/github-action-setup-xmake@v1
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/AppData/Local/.xmake
+            .xmake
+          key: xmake-iVerse-debug-with-tests-windows-x64-${{ github.sha }}
+          restore-keys: |
+            xmake-iVerse-debug-with-tests-windows-x64-
+
+      - run: |
+          xmake repo -u
+
+      - run: |
+          xmake f -a x64 -m debug -p windows -v -y
+
+      - run: |
+          xmake -w -y
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: iVerse-debug-with-tests-windows-x64-${{ github.sha }}
+          path: |
+            build/windows/x64/debug/iVerse.dll
+            build/windows/x64/debug/iVerse.lib
+            build/windows/x64/debug/iVerse.pdb

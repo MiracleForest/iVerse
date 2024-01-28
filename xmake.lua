@@ -1,4 +1,4 @@
-add_rules("mode.debug", "mode.release")
+add_rules("mode.debug", "mode.release", "mode.releasedbg")
 
 add_repositories("MiF-repo https://github.com/MiracleForest/xmake-repo.git")
 

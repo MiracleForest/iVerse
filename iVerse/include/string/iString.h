@@ -30,11 +30,11 @@ namespace String
     class iString
     {
     private:
-        Ptr<u8char>            _data;
-        size_t                 _length;
-        size_t                 _begin;
-        size_t                 _capacity;
-        std::allocator<u8char> _alloc;
+        Ptr<u8char>            mData;
+        size_t                 mLength;
+        size_t                 mBegin;
+        size_t                 mCapacity;
+        std::allocator<u8char> mAlloc;
 
     public:
         iString(CPtr<char> dat) { _create((CPtr<u8char>)dat); }
@@ -45,30 +45,37 @@ namespace String
             auto tempStr = std::wstring_convert<std::codecvt_utf16<wchar>>().to_bytes(dat);
             _create((CPtr<u8char>)tempStr.c_str(), tempStr.length());
         }
-        ~iString() { _alloc.deallocate(_data, _capacity); }
+        ~iString() { mAlloc.deallocate(mData, mCapacity); }
         operator std::string() const { return operator CPtr<char>(); }
-        operator CPtr<char>() const { return (CPtr<char>)(_data + _begin); }
+        operator CPtr<char>() const { return (CPtr<char>)(mData + mBegin); }
 
     public:
-        size_t length() const { return _length; }
+        size_t length() const { return mLength; }
 
     private:
         void _create(CPtr<u8char> dat)
         {
-            for (_length = 0; *(dat + _length); _length++) {}
-            _capacity = 2 * _length;
-            _data     = _alloc.allocate(_capacity);
-            _begin    = _length / 2;
-            memcpy(_data + _begin, dat, _length + 1);
+            mLength   = _calculateLength(dat);
+            mCapacity = 2 * mLength;
+            mData     = mAlloc.allocate(mCapacity);
+            mBegin    = mLength / 2;
+            memcpy(mData + mBegin, dat, mLength + 1);
         }
 
         void _create(CPtr<u8char> dat, size_t length)
         {
-            _capacity = 2 * length;
-            _data     = _alloc.allocate(_capacity);
-            _begin    = length / 2;
-            _length   = length;
-            memcpy(_data + _begin, dat, length + 1);
+            mCapacity = 2 * length;
+            mData     = mAlloc.allocate(mCapacity);
+            mBegin    = length / 2;
+            mLength   = length;
+            memcpy(mData + mBegin, dat, length + 1);
+        }
+
+        constexpr static std::size_t _calculateLength(CPtr<u8char> arg)
+        {
+            std::size_t length = 0;
+            while (*arg++) { length++; }
+            return length;
         }
     };
 } // namespace String

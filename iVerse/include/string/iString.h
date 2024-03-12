@@ -39,37 +39,37 @@ namespace String
     public:
         iString()
             : std::string() {};
-        iString(const char* const _Ptr)
+        iString(CPtr<char> const _Ptr)
             : std::string(_Ptr) {};
-        iString(const std::allocator<char>& _Al)
+        iString(CRef<std::allocator<char>> _Al)
             : std::string(_Al) {};
-        iString(std::string&& _Right)
+        iString(RRef<std::string> _Right)
             : std::string(_Right) {};
-        iString(const std::string& _Right)
+        iString(CRef<std::string> _Right)
             : std::string(_Right) {};
-        iString(std::initializer_list<char> _Ilist, const std::allocator<char>& _Al)
+        iString(std::initializer_list<char> _Ilist, CRef<std::allocator<char>> _Al)
             : std::string(_Ilist, _Al) {};
-        iString(std::string&& _Right, const std::allocator<char>& _Al)
+        iString(RRef<std::string> _Right, CRef<std::allocator<char>> _Al)
             : std::string(_Right, _Al) {};
-        iString(const char* const _Ptr, const std::allocator<char>& _Al)
+        iString(CPtr<char> const _Ptr, CRef<std::allocator<char>> _Al)
             : std::string(_Ptr, _Al) {};
-        iString(const std::string& _Right, const std::allocator<char>& _Al)
+        iString(CRef<std::string> _Right, CRef<std::allocator<char>> _Al)
             : std::string(_Right, _Al) {};
         iString(const size_t _Count, const char _Ch)
             : std::string(_Count, _Ch) {};
-        iString(const char* const _Ptr, const size_t _Count)
+        iString(CPtr<char> const _Ptr, const size_t _Count)
             : std::string(_Ptr, _Count) {};
-        iString(const size_t _Count, const char _Ch, const std::allocator<char>& _Al)
+        iString(const size_t _Count, const char _Ch, CRef<std::allocator<char>> _Al)
             : std::string(_Count, _Ch, _Al) {};
-        iString(const char* const _Ptr, const size_t _Count, const std::allocator<char>& _Al)
+        iString(CPtr<char> const _Ptr, const size_t _Count, CRef<std::allocator<char>> _Al)
             : std::string(_Ptr, _Count, _Al) {};
-        iString(const std::string& _Right, const size_t _Roff, const std::allocator<char>& _Al)
+        iString(CRef<std::string> _Right, const size_t _Roff, CRef<std::allocator<char>> _Al)
             : std::string(_Right, _Roff, _Al) {};
         iString(
-            const std::string&          _Right,
-            const size_t                _Roff,
-            const size_t                _Count,
-            const std::allocator<char>& _Al
+            CRef<std::string>          _Right,
+            const size_t               _Roff,
+            const size_t               _Count,
+            CRef<std::allocator<char>> _Al
         )
             : std::string(_Right, _Roff, _Count, _Al) {};
 

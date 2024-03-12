@@ -2,7 +2,7 @@ add_rules("mode.debug", "mode.release", "mode.releasedbg")
 
 add_repositories("MiF-repo https://github.com/MiracleForest/xmake-repo.git")
 
-add_requires("iFamily master")
+add_requires("iFamily 0.1.0")
 
 target("iVerseTest")
     set_kind("binary")

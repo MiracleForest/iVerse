@@ -273,6 +273,22 @@ namespace String
             std::transform(basic_string::begin(), basic_string::end(), basic_string::begin(), std::tolower);
         }
 
+        iString ltrim(CRef<iString> str)
+        {
+            iString s        = str;
+            auto    notSpace = [](unsigned char ch) { return !std::isspace(ch); };
+            s.erase(s.begin(), std::find_if(s.begin(), s.end(), notSpace));
+            return s;
+        }
+        iString rtrim(CRef<iString> str)
+        {
+            iString s        = str;
+            auto    notSpace = [](unsigned char ch) { return !std::isspace(ch); };
+            s.erase(std::find_if(s.rbegin(), s.rend(), notSpace).base(), s.end());
+            return s;
+        }
+        iString trim(CRef<iString> s) { return ltrim(rtrim(s)); }
+
     public:
         // Overloading from u8string::push_back
         void push_back(CRef<iString> string)

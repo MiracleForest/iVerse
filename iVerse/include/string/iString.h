@@ -34,12 +34,16 @@ namespace String
     {
     public:
         using Index = size_t;
+
+    public:
         enum class ReplaceExcludeType
         {
             None,
             Range,
             Index
         };
+
+    public:
         class iStringReplaceExclude
         {
             friend iString;
@@ -73,6 +77,8 @@ namespace String
             : std::u8string((CPtr<char8_t>)_Right) {};
         iString(CRef<std::u8string> _Right)
             : std::u8string(_Right) {};
+
+    public:
         operator CPtr<char>() const { return (CPtr<char>)data(); }
         operator Ptr<char>() { return (Ptr<char>)data(); }
 
@@ -80,7 +86,7 @@ namespace String
         Ref<iString> replace(
             CRef<iString>         oldString,
             CRef<iString>         newString,
-            size_t                times   = std::string::npos,
+            size_t                times   = basic_string::npos,
             bool                  forward = true,
             Index                 pos     = 0,
             iStringReplaceExclude exclude = iStringReplaceExclude()
@@ -89,7 +95,7 @@ namespace String
             Index itemIndex = 0;
             pos             = forward ? basic_string::find(oldString.data(), pos)
                                       : basic_string::rfind(oldString.data(), pos);
-            while (pos != std::string::npos && times-- != 0)
+            while (pos != basic_string::npos && times-- != 0)
             {
                 if (exclude.mType == ReplaceExcludeType::Range)
                 {
@@ -119,6 +125,7 @@ namespace String
             }
             return *this;
         }
+
         Index find(
             CRef<iString>         string,
             bool                  forward = true,
@@ -128,7 +135,7 @@ namespace String
         {
             Index itemIndex = 0;
             pos = forward ? basic_string::find(string.data(), pos) : basic_string::rfind(string.data(), pos);
-            while (pos != std::string::npos)
+            while (pos != basic_string::npos)
             {
                 if (exclude.mType == ReplaceExcludeType::Range)
                 {
@@ -144,8 +151,9 @@ namespace String
                 }
                 return pos;
             }
-            return std::string::npos;
+            return basic_string::npos;
         }
+
         size_t count(
             CRef<iString>         string,
             bool                  forward = true,
@@ -156,7 +164,7 @@ namespace String
             size_t c         = 0;
             Index  itemIndex = 0;
             pos = forward ? basic_string::find(string.data(), pos) : basic_string::rfind(string.data(), pos);
-            while (pos != std::string::npos)
+            while (pos != basic_string::npos)
             {
                 if (exclude.mType == ReplaceExcludeType::Range)
                 {
@@ -180,9 +188,10 @@ namespace String
             }
             return c;
         }
+
         Ref<iString> remove(
             CRef<iString>         string,
-            size_t                times   = std::string::npos,
+            size_t                times   = basic_string::npos,
             bool                  forward = true,
             Index                 pos     = 0,
             iStringReplaceExclude exclude = iStringReplaceExclude()
@@ -190,7 +199,7 @@ namespace String
         {
             Index itemIndex = 0;
             pos = forward ? basic_string::find(string.data(), pos) : basic_string::rfind(string.data(), pos);
-            while (pos != std::string::npos && times-- != 0)
+            while (pos != basic_string::npos && times-- != 0)
             {
                 if (exclude.mType == ReplaceExcludeType::Range)
                 {
@@ -214,19 +223,21 @@ namespace String
             }
             return *this;
         }
+
         Ref<iString> insert(CRef<iString> string, Index pos, bool override = false)
         {
             if (override) { basic_string::replace(pos, string.length(), string); }
             else { basic_string::replace(pos, 0, string); }
             return *this;
         }
+
         std::vector<iString> split(CRef<iString> delimiter, bool pushEmpty = false)
         {
             std::vector<iString> result;
             Index                start = 0;
             Index                end   = basic_string::find(delimiter);
 
-            while (end != std::string::npos)
+            while (end != basic_string::npos)
             {
                 if (delimiter.empty() && start == end) { end++; }
 
@@ -244,16 +255,20 @@ namespace String
 
             return result;
         }
+
         std::string   toStdString() { return (CPtr<char>)data(); }
+        
         Ref<char8_t>  index(const size_type _Off) { return (*this)[_Off]; }
         CRef<char8_t> index(const size_type _Off) const { return (*this)[_Off]; }
+        
         void push(CRef<iString> string) { basic_string::replace(basic_string::length(), 0, string.data()); }
         void pop(size_t count) { basic_string::replace(basic_string::length() - count, count, u8""); }
-        void upper()
+        
+        void toUpper()
         {
             std::transform(basic_string::begin(), basic_string::end(), basic_string::begin(), std::toupper);
         }
-        void lower()
+        void toLower()
         {
             std::transform(basic_string::begin(), basic_string::end(), basic_string::begin(), std::tolower);
         }

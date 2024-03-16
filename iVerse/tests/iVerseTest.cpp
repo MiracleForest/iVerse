@@ -57,7 +57,7 @@ int main()
 {
     system("chcp 65001");
     char8_t c[] = TESTSTRU8;
-    istring str = TESTSTR;
+    istring str = TESTSTRU8;
     // istring  str1(c);
     std::cout << (const char*)c << std::endl;
     std::cout << str << std::endl;

@@ -17,102 +17,248 @@
  ****/
 #pragma once
 
+#include <algorithm>
 #include <aliases.h>
+#include <cctype>
 #include <functional>
 #include <iFamily.h>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace MiracleForest::inline i::inline iVerse
 {
 namespace String
 {
-    class iString : public std::string
+    class iString : public std::u8string
     {
-    private:
-        Ptr<u8char>            mData;
-        size_t                 mLength;
-        size_t                 mBegin;
-        size_t                 mCapacity;
-        std::allocator<u8char> mAlloc;
-
     public:
-        iString()
-            : std::string() {};
-        iString(CPtr<char> const _Ptr)
-            : std::string(_Ptr) {};
-        iString(CRef<std::allocator<char>> _Al)
-            : std::string(_Al) {};
-        iString(RRef<std::string> _Right)
-            : std::string(_Right) {};
-        iString(CRef<std::string> _Right)
-            : std::string(_Right) {};
-        iString(std::initializer_list<char> _Ilist, CRef<std::allocator<char>> _Al)
-            : std::string(_Ilist, _Al) {};
-        iString(RRef<std::string> _Right, CRef<std::allocator<char>> _Al)
-            : std::string(_Right, _Al) {};
-        iString(CPtr<char> const _Ptr, CRef<std::allocator<char>> _Al)
-            : std::string(_Ptr, _Al) {};
-        iString(CRef<std::string> _Right, CRef<std::allocator<char>> _Al)
-            : std::string(_Right, _Al) {};
-        iString(const size_t _Count, const char _Ch)
-            : std::string(_Count, _Ch) {};
-        iString(CPtr<char> const _Ptr, const size_t _Count)
-            : std::string(_Ptr, _Count) {};
-        iString(const size_t _Count, const char _Ch, CRef<std::allocator<char>> _Al)
-            : std::string(_Count, _Ch, _Al) {};
-        iString(CPtr<char> const _Ptr, const size_t _Count, CRef<std::allocator<char>> _Al)
-            : std::string(_Ptr, _Count, _Al) {};
-        iString(CRef<std::string> _Right, const size_t _Roff, CRef<std::allocator<char>> _Al)
-            : std::string(_Right, _Roff, _Al) {};
-        iString(
-            CRef<std::string>          _Right,
-            const size_t               _Roff,
-            const size_t               _Count,
-            CRef<std::allocator<char>> _Al
-        )
-            : std::string(_Right, _Roff, _Count, _Al) {};
-
-    public:
-        iString& replace(CRef<iString> oldString, CRef<iString> newString, size_t times = std::string::npos)
+        using Index = size_t;
+        enum class ReplaceExcludeType
         {
-            size_t move = newString.length();
-            if (oldString.empty()) { move++; }
-            size_t pos = 0;
-            while ((pos = find(oldString.data(), pos)) != std::string::npos && times-- != 0)
+            None,
+            Range,
+            Index
+        };
+        class iStringReplaceExclude
+        {
+            friend iString;
+
+        private:
+            ReplaceExcludeType                           mType;
+            std::variant<std::pair<Index, Index>, Index> mExclude;
+
+        public:
+            explicit iStringReplaceExclude()
+                : mExclude((Index)0)
             {
-                basic_string::replace(pos, oldString.length(), newString.data());
-                pos += move;
+                mType = ReplaceExcludeType::None;
             }
+            explicit iStringReplaceExclude(Index start, Index end)
+                : mExclude(std::make_pair<>(start, end))
+            {
+                mType = ReplaceExcludeType::Range;
+            }
+            explicit iStringReplaceExclude(Index itemIndex)
+                : mExclude(itemIndex)
+            {
+                mType = ReplaceExcludeType::Index;
+            }
+        };
+
+    private:
+    public:
+        using std::u8string::u8string;
+        iString(CPtr<char> const _Right)
+            : std::u8string((CPtr<char8_t>)_Right) {};
+        iString(CRef<std::u8string> _Right)
+            : std::u8string(_Right) {};
+        operator CPtr<char>() const { return (CPtr<char>)data(); }
+        operator Ptr<char>() { return (Ptr<char>)data(); }
+
+    public:
+        Ref<iString> replace(
+            CRef<iString>         oldString,
+            CRef<iString>         newString,
+            size_t                times   = std::string::npos,
+            bool                  forward = true,
+            Index                 pos     = 0,
+            iStringReplaceExclude exclude = iStringReplaceExclude()
+        )
+        {
+            Index itemIndex = 0;
+            pos             = forward ? basic_string::find(oldString.data(), pos)
+                                      : basic_string::rfind(oldString.data(), pos);
+            while (pos != std::string::npos && times-- != 0)
+            {
+                if (exclude.mType == ReplaceExcludeType::Range)
+                {
+                    if (pos > std::get<std::pair<Index, Index>>(exclude.mExclude).first
+                        || pos + oldString.length()
+                               < std::get<std::pair<Index, Index>>(exclude.mExclude).second)
+                    {
+                        basic_string::replace(pos, oldString.length(), newString.data());
+                    }
+                }
+                else if (exclude.mType == ReplaceExcludeType::None)
+                {
+                    if (std::get<Index>(exclude.mExclude) != itemIndex++)
+                    {
+                        basic_string::replace(pos, oldString.length(), newString.data());
+                    }
+                }
+                else { basic_string::replace(pos, oldString.length(), newString.data()); }
+                pos = forward ? basic_string::find(
+                          oldString.data(),
+                          pos + newString.length() + oldString.empty() ? 1 : 0
+                      )
+                              : basic_string::rfind(oldString.data(), pos - oldString.empty() ? 1 : 0);
+            }
+            return *this;
+        }
+        Index find(
+            CRef<iString>         string,
+            bool                  forward = true,
+            Index                 pos     = 0,
+            iStringReplaceExclude exclude = iStringReplaceExclude()
+        )
+        {
+            Index itemIndex = 0;
+            pos = forward ? basic_string::find(string.data(), pos) : basic_string::rfind(string.data(), pos);
+            while (pos != std::string::npos)
+            {
+                if (exclude.mType == ReplaceExcludeType::Range)
+                {
+                    if (pos > std::get<std::pair<Index, Index>>(exclude.mExclude).first
+                        || pos + string.length() < std::get<std::pair<Index, Index>>(exclude.mExclude).second)
+                    {
+                        return pos;
+                    }
+                }
+                else if (exclude.mType == ReplaceExcludeType::None)
+                {
+                    if (std::get<Index>(exclude.mExclude) != itemIndex++) { return pos; }
+                }
+                return pos;
+            }
+            return std::string::npos;
+        }
+        size_t count(
+            CRef<iString>         string,
+            bool                  forward = true,
+            Index                 pos     = 0,
+            iStringReplaceExclude exclude = iStringReplaceExclude()
+        )
+        {
+            size_t c         = 0;
+            Index  itemIndex = 0;
+            pos = forward ? basic_string::find(string.data(), pos) : basic_string::rfind(string.data(), pos);
+            while (pos != std::string::npos)
+            {
+                if (exclude.mType == ReplaceExcludeType::Range)
+                {
+                    if (pos > std::get<std::pair<Index, Index>>(exclude.mExclude).first
+                        || pos + string.length() < std::get<std::pair<Index, Index>>(exclude.mExclude).second)
+                    {
+                        c++;
+                    }
+                }
+                else if (exclude.mType == ReplaceExcludeType::None)
+                {
+                    if (std::get<Index>(exclude.mExclude) != itemIndex++) { c++; }
+                }
+                else { c++; }
+                pos = forward
+                          ? basic_string::find(string.data(), pos + string.length() + string.empty() ? 1 : 0)
+                          : basic_string::rfind(string.data(), pos - string.empty() ? 1 : 0);
+            }
+            return c;
+        }
+        Ref<iString> remove(
+            CRef<iString>         string,
+            size_t                times   = std::string::npos,
+            bool                  forward = true,
+            Index                 pos     = 0,
+            iStringReplaceExclude exclude = iStringReplaceExclude()
+        )
+        {
+            Index itemIndex = 0;
+            pos = forward ? basic_string::find(string.data(), pos) : basic_string::rfind(string.data(), pos);
+            while (pos != std::string::npos && times-- != 0)
+            {
+                if (exclude.mType == ReplaceExcludeType::Range)
+                {
+                    if (pos > std::get<std::pair<Index, Index>>(exclude.mExclude).first
+                        || pos + string.length() < std::get<std::pair<Index, Index>>(exclude.mExclude).second)
+                    {
+                        basic_string::replace(pos, string.length(), u8"");
+                    }
+                }
+                else if (exclude.mType == ReplaceExcludeType::None)
+                {
+                    if (std::get<Index>(exclude.mExclude) != itemIndex++)
+                    {
+                        basic_string::replace(pos, string.length(), u8"");
+                    }
+                }
+                else { basic_string::replace(pos, string.length(), u8""); }
+                pos = forward ? basic_string::find(string.data(), pos + string.empty() ? 1 : 0)
+                              : basic_string::rfind(string.data(), pos - string.empty() ? 1 : 0);
+            }
+            return *this;
+        }
+        Ref<iString> insert(CRef<iString> string, Index pos, bool override = false)
+        {
+            if (override) { basic_string::replace(pos, string.length(), string); }
+            else { basic_string::replace(pos, 0, string); }
             return *this;
         }
         std::vector<iString> split(CRef<iString> delimiter, bool pushEmpty = false)
         {
             std::vector<iString> result;
-            size_t               start = 0;
-            size_t               end   = find(delimiter);
+            Index                start = 0;
+            Index                end   = basic_string::find(delimiter);
 
             while (end != std::string::npos)
             {
                 if (delimiter.empty() && start == end) { end++; }
 
-                // 提取子字符串（不包括分隔符）
-                std::string token = substr(start, end - start);
+                // Extract substring (excluding delimiters).
+                auto token = substr(start, end - start);
                 if (!token.empty() || pushEmpty) { result.push_back(token); }
 
-
-                // 跳过分隔符
+                // Skip delimiters.
                 start = end + delimiter.size();
-                end   = find(delimiter, start);
+                end   = basic_string::find(delimiter, start);
             }
 
-            // 添加最后一个子字符串（可能没有分隔符）
+            // Add the last substring (may not have a delimiter).
             if (start < size()) { result.push_back(substr(start)); }
 
             return result;
         }
+        std::string   toStdString() { return (CPtr<char>)data(); }
+        Ref<char8_t>  index(const size_type _Off) { return (*this)[_Off]; }
+        CRef<char8_t> index(const size_type _Off) const { return (*this)[_Off]; }
+        void push(CRef<iString> string) { basic_string::replace(basic_string::length(), 0, string.data()); }
+        void pop(size_t count) { basic_string::replace(basic_string::length() - count, count, u8""); }
+        void upper()
+        {
+            std::transform(basic_string::begin(), basic_string::end(), basic_string::begin(), std::toupper);
+        }
+        void lower()
+        {
+            std::transform(basic_string::begin(), basic_string::end(), basic_string::begin(), std::tolower);
+        }
 
-    private:
+    public:
+        // Overloading from u8string::push_back
+        void push_back(CRef<iString> string)
+        {
+            basic_string::replace(basic_string::length(), 0, string.data());
+        }
+        // Overloading from u8string::pop_back
+        void pop_back(size_t count) { basic_string::replace(basic_string::length() - count, count, u8""); }
     };
 } // namespace String
 } // namespace MiracleForest::inline i::inline iVerse
@@ -124,8 +270,8 @@ struct hash<MiracleForest::String::iString>
 {
     size_t operator()(MiracleForest::CRef<MiracleForest::String::iString> key)
     {
-        MiracleForest::uint       hash = 0;
-        MiracleForest::CPtr<char> str  = key.data();
+        MiracleForest::uint hash = 0;
+        auto                str  = key.data();
         while (*str) { hash = hash * 131 + (*str++); }
         return (hash & 0x7FFFFFFF);
     }

@@ -110,9 +110,12 @@ namespace String
                 else { basic_string::replace(pos, oldString.length(), newString.data()); }
                 pos = forward ? basic_string::find(
                           oldString.data(),
-                          pos + newString.length() + oldString.empty() ? 1 : 0
+                          pos + newString.length() + oldString.empty() ? (Index)1 : (Index)0
                       )
-                              : basic_string::rfind(oldString.data(), pos - oldString.empty() ? 1 : 0);
+                              : basic_string::rfind(
+                                  oldString.data(),
+                                  pos - oldString.empty() ? (Index)1 : (Index)0
+                              );
             }
             return *this;
         }
@@ -169,8 +172,11 @@ namespace String
                 }
                 else { c++; }
                 pos = forward
-                          ? basic_string::find(string.data(), pos + string.length() + string.empty() ? 1 : 0)
-                          : basic_string::rfind(string.data(), pos - string.empty() ? 1 : 0);
+                          ? basic_string::find(
+                              string.data(),
+                              pos + string.length() + string.empty() ? (Index)1 : (Index)0
+                          )
+                          : basic_string::rfind(string.data(), pos - string.empty() ? (Index)1 : (Index)0);
             }
             return c;
         }
@@ -202,8 +208,9 @@ namespace String
                     }
                 }
                 else { basic_string::replace(pos, string.length(), u8""); }
-                pos = forward ? basic_string::find(string.data(), pos + string.empty() ? 1 : 0)
-                              : basic_string::rfind(string.data(), pos - string.empty() ? 1 : 0);
+                pos = forward
+                          ? basic_string::find(string.data(), pos + string.empty() ? (Index)1 : (Index)0)
+                          : basic_string::rfind(string.data(), pos - string.empty() ? (Index)1 : (Index)0);
             }
             return *this;
         }

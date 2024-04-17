@@ -256,14 +256,14 @@ namespace String
             return result;
         }
 
-        std::string   toStdString() { return (CPtr<char>)data(); }
-        
+        std::string toStdString() { return (CPtr<char>)data(); }
+
         Ref<char8_t>  index(const size_type _Off) { return (*this)[_Off]; }
         CRef<char8_t> index(const size_type _Off) const { return (*this)[_Off]; }
-        
+
         void push(CRef<iString> string) { basic_string::replace(basic_string::length(), 0, string.data()); }
         void pop(size_t count) { basic_string::replace(basic_string::length() - count, count, u8""); }
-        
+
         void toUpper()
         {
             std::transform(basic_string::begin(), basic_string::end(), basic_string::begin(), std::toupper);
